@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import difflib
+import uvicorn
 
 app = FastAPI()
 
@@ -78,3 +79,25 @@ def search(query):
         data.append({"Title": title, "Content": content, "Software": software, "Id": id})
 
     return data
+
+@app.get("/load_post/{post_id}")
+def load_post(post_id: str):
+    # Gets all posts from database
+    posts = database.get_posts()
+
+    return_post = False
+
+    # Finds the post based on id
+    for post in posts:
+        database_post_id = post[4]
+
+        if post_id == database_post_id:
+            # Formats data for sending to client
+            data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3]}
+
+            return_post = data
+
+    return return_post
+
+if __name__ == '__main__':
+    uvicorn.run(app="main:app", port=8003)
