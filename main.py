@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
@@ -98,6 +98,33 @@ def load_post(post_id: str):
             return_post = data
 
     return return_post
+
+@app.post('/new_comment/{username}/{token}')
+def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
+    # Verifies token with auth server
+    status = auth_server.verify_token(username=username, token=token)
+
+    if status:
+        database.create_comment(author=username, comment=comment, post_id=post_id)
+
+        return {"Status": "Ok"}
+    
+    else:
+        return {"Status": "Unsuccessful"}
+    
+
+@app.post('/new_answer/{username}/{token}')
+def new_answer(username: str, token: str, answer: str = Form(), post_id: str = Form()):
+    # Verifies token with auth server
+    status = auth_server.verify_token(username=username, token=token)
+
+    if status:
+        database.create_answer(author=username, answer=answer, post_id=post_id)
+
+        return {"Status": "Ok"}
+    
+    else:
+        return {"Status": "Unsuccessful"}
 
 if __name__ == '__main__':
     uvicorn.run(app="main:app", port=8003)
