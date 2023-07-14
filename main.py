@@ -4,6 +4,7 @@ import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import difflib
 import uvicorn
+import json
 
 app = FastAPI()
 
@@ -26,8 +27,8 @@ app.add_middleware(
 def root():
     return {"Hello": "World"}
 
-@app.get("/new_post/{username}/{token}/{title}/{content}/{software}")
-def new_post(username: str, token: str, title: str, content: str, software: str):
+@app.post("/new_post/{username}/{token}")
+def new_post(username: str, token: str, title: str = Form(), content: str = Form(), software: str = Form()):
     # Verifies token with auth server
     verify = auth_server.verify_token(username, token)
 
@@ -98,6 +99,25 @@ def load_post(post_id: str):
             return_post = data
 
     return return_post
+
+@app.get("/load_comments/{post_id}")
+def load_comments(post_id: str):
+    # Gets all posts from database
+    posts = database.get_posts()
+
+    return_comments = False
+
+    # Finds the post based on id
+    for post in posts:
+        database_post_id = post[4]
+
+        if post_id == database_post_id:
+            # Formats data for sending to client
+            data = json.loads(post[5])
+
+            return_comments = data
+
+    return return_comments
 
 @app.post('/new_comment/{username}/{token}')
 def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
