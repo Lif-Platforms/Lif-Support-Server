@@ -5,6 +5,7 @@ import utils.db_interface as database
 import difflib
 import uvicorn
 import json
+import uuid
 
 app = FastAPI()
 
@@ -38,9 +39,12 @@ def new_post(username: str, token: str, title: str = Form(), content: str = Form
         valid_software = ["Ringer", "Dayly"]
 
         if software in valid_software:
-            database.new_post(username, title, content, software)
+            # Generate a random UUID
+            post_id = str(uuid.uuid4())
 
-            return {"Status": "Ok"}
+            database.new_post(username, title, content, software, post_id)
+
+            return {"Status": "Ok", "post_id": post_id}
         else: 
             return {"Status": "Unsuccessful"}
     else:
@@ -145,6 +149,12 @@ def new_answer(username: str, token: str, answer: str = Form(), post_id: str = F
     
     else:
         return {"Status": "Unsuccessful"}
+    
+@app.get('/load_recent_posts')
+def recent_posts():
+    posts = database.get_recent_posts()
+
+    return posts
 
 if __name__ == '__main__':
     uvicorn.run(app="main:app", port=8003)

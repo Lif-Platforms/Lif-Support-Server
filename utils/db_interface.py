@@ -1,10 +1,7 @@
 import sqlite3
-import uuid
 import json
 
-def new_post(author, title, content, software):
-    # Generate a random UUID
-    post_id = str(uuid.uuid4())
+def new_post(author, title, content, software, post_id):
 
     # Connects to database
     conn = sqlite3.connect("database/database.db")
@@ -81,3 +78,28 @@ def create_answer(author, answer, post_id):
             
     conn.commit()
     conn.close()
+
+def get_recent_posts():
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    # Execute a SELECT query to retrieve posts
+    c.execute("SELECT * FROM posts ORDER BY id DESC LIMIT 5")
+    posts = c.fetchall()
+
+    # This is what the function will return after the data is formatted
+    return_posts = []
+
+    for post in posts:
+        raw_content = post[2]
+
+        # Adds "..." if the content is too long for the preview
+        if len(raw_content) <= 100:
+            content = raw_content
+        else:
+            content =  raw_content[:100 - 3] + "..."
+
+        return_posts.append({"Title": post[1], "Content": content, "Software": post[3], "Id": post[4]})
+
+    return return_posts
