@@ -1,20 +1,22 @@
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import difflib
 import uvicorn
 import json
 import uuid
+import yaml
 
 app = FastAPI()
 
+# Loads Configuration
+with open('config.yml', 'r') as file:
+    configuration = yaml.safe_load(file)
+
 # Configure CORS
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    # Add more allowed origins as needed
-]
+origins = configuration['allow-origins']
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,9 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"Hello": "World"}
+    # Loads "index.html" from resources folder
+    with open("src/resources/index.html", "r") as index:
+        page = index.read()
+
+    return page
 
 @app.post("/new_post/{username}/{token}")
 def new_post(username: str, token: str, title: str = Form(), content: str = Form(), software: str = Form()):

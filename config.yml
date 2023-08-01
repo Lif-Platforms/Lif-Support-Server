@@ -1,0 +1,4 @@
+# Allow requests from these domains
+allow-origins: 
+  - http://localhost
+  - http://localhost:3000
