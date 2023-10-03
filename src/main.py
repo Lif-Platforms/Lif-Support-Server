@@ -8,8 +8,15 @@ import uvicorn
 import json
 import uuid
 import yaml
+import os
 
 app = FastAPI()
+
+# Get the absolute path of the current script (My Server Plus.py)
+script_path = os.path.abspath(__file__)
+
+# Get the directory path of the current script
+script_dir = os.path.dirname(script_path)
 
 # Loads Configuration
 with open('config.yml', 'r') as file:
@@ -29,7 +36,7 @@ app.add_middleware(
 @app.get("/", response_class=HTMLResponse)
 def root():
     # Loads "index.html" from resources folder
-    with open("src/resources/index.html", "r") as index:
+    with open(script_dir + "/resources/index.html", "r") as index:
         page = index.read()
 
     return page
@@ -163,4 +170,4 @@ def recent_posts():
     return posts
 
 if __name__ == '__main__':
-    uvicorn.run(app="main:app", port=8003)
+    uvicorn.run(app="main:app", port=8003, host="0.0.0.0")

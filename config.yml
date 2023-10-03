@@ -2,3 +2,5 @@
 allow-origins: 
   - http://localhost
   - http://localhost:3000
+  - http://localhost:57875
+  - http://10.0.0.97:3000
