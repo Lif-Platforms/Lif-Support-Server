@@ -7,3 +7,5 @@ allow-origins:
   
 # Url to Auth Server
 auth-url: http://localhost:8002
+
+auth-access-token: kjhsdagfkjshhfksjhfdalkjd

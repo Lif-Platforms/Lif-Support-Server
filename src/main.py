@@ -137,12 +137,21 @@ def load_comments(post_id: str):
     return return_comments
 
 @app.post('/new_comment/{username}/{token}')
-def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
+async def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
     # Verifies token with auth server
-    status = auth_server.verify_token(username=username, token=token)
+    status = await auth_server.verify_token(username=username, token=token)
+
+    print(status)
 
     if status:
+        # Create comment in database
         database.create_comment(author=username, comment=comment, post_id=post_id)
+
+        # Get post author
+        author = database.get_post_author(post_id=post_id)
+
+        # Get author email from auth server
+        author_email = await auth_server.get_account_email(author)
 
         return {"Status": "Ok"}
     

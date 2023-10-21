@@ -103,3 +103,16 @@ def get_recent_posts():
         return_posts.append({"Title": post[1], "Content": content, "Software": post[3], "Id": post[4]})
 
     return return_posts
+
+def get_post_author(post_id: str):
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    c.execute ("SELECT * FROM posts WHERE id = ?", (post_id,))
+    row = c.fetchone ()
+
+    # Fetch username from row 
+    username = row[0]
+
+    return username
