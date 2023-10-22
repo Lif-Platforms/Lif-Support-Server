@@ -7,3 +7,9 @@ allow-origins:
   
 # Url to Auth Server
 auth-url: http://localhost:8002
+
+auth-access-token: kjhsdagfkjshhfksjhfdalkjd
+
+mail-service-token: TestToken123
+
+mail-service-url: http://localhost:8005

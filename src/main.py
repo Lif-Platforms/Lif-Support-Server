@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
+import utils.email_interface as email_interface
 import difflib
 import uvicorn
 import json
@@ -12,7 +13,7 @@ import os
 
 app = FastAPI()
 
-# Get the absolute path of the current script (My Server Plus.py)
+# Get the absolute path of the current script
 script_path = os.path.abspath(__file__)
 
 # Get the directory path of the current script
@@ -137,12 +138,24 @@ def load_comments(post_id: str):
     return return_comments
 
 @app.post('/new_comment/{username}/{token}')
-def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
+async def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
     # Verifies token with auth server
-    status = auth_server.verify_token(username=username, token=token)
+    status = await auth_server.verify_token(username=username, token=token)
+
+    print(status)
 
     if status:
+        # Create comment in database
         database.create_comment(author=username, comment=comment, post_id=post_id)
+
+        # Get post author
+        author = database.get_post_author(post_id=post_id)
+
+        # Get author email from auth server
+        author_email = await auth_server.get_account_email(author)
+
+        # Send email notification
+        email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
 
         return {"Status": "Ok"}
     
