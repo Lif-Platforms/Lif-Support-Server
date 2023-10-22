@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import utils.email_interface as email_interface
@@ -43,11 +43,10 @@ def root():
     return page
 
 @app.post("/new_post/{username}/{token}")
-def new_post(username: str, token: str, title: str = Form(), content: str = Form(), software: str = Form()):
-    # Verifies token with auth server
-    verify = auth_server.verify_token(username, token)
+async def new_post(username: str, token: str, title: str = Form(), content: str = Form(), software: str = Form()):
 
-    if verify:
+    # Verifies token with auth server
+    if await auth_server.verify_token(username, token):
 
         # Verifies software field is valid
         valid_software = ["Ringer", "Dayly"]
@@ -58,11 +57,11 @@ def new_post(username: str, token: str, title: str = Form(), content: str = Form
 
             database.new_post(username, title, content, software, post_id)
 
-            return {"Status": "Ok", "post_id": post_id}
+            return {"post_id": post_id}
         else: 
-            return {"Status": "Unsuccessful"}
+            raise HTTPException(status_code=400, detail='Invalid Software!')
     else:
-        return {"Status": "Unsuccessful"}
+        raise HTTPException(status_code=401, detail='Invalid Token!')
     
 @app.get("/search/{query}")
 def search(query):
