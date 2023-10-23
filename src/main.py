@@ -57,7 +57,7 @@ async def new_post(username: str, token: str, title: str = Form(), content: str 
 
             database.new_post(username, title, content, software, post_id)
 
-            return {"post_id": post_id}
+            return JSONResponse(status_code=201, content={"post_id": post_id})
         else: 
             raise HTTPException(status_code=400, detail='Invalid Software!')
     else:
@@ -139,11 +139,7 @@ def load_comments(post_id: str):
 @app.post('/new_comment/{username}/{token}')
 async def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
     # Verifies token with auth server
-    status = await auth_server.verify_token(username=username, token=token)
-
-    print(status)
-
-    if status:
+    if await auth_server.verify_token(username=username, token=token):
         # Create comment in database
         database.create_comment(author=username, comment=comment, post_id=post_id)
 
@@ -156,24 +152,31 @@ async def new_comment(username: str, token: str, comment: str = Form(), post_id:
         # Send email notification
         email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
 
-        return {"Status": "Ok"}
+        return JSONResponse(status_code=201, content='Created Comment!')
     
     else:
-        return {"Status": "Unsuccessful"}
+        raise HTTPException(status_code=401, detail='Invalid Token!')
     
 
 @app.post('/new_answer/{username}/{token}')
-def new_answer(username: str, token: str, answer: str = Form(), post_id: str = Form()):
+async def new_answer(username: str, token: str, answer: str = Form(), post_id: str = Form()):
     # Verifies token with auth server
-    status = auth_server.verify_token(username=username, token=token)
-
-    if status:
+    if await auth_server.verify_token(username=username, token=token):
         database.create_answer(author=username, answer=answer, post_id=post_id)
 
-        return {"Status": "Ok"}
+        # Get post author
+        author = database.get_post_author(post_id=post_id)
+
+        # Get author email from auth server
+        author_email = await auth_server.get_account_email(author)
+
+        # Send email notification
+        email_interface.send_comment_notification(author=username, recipient=author_email, content=answer, post_id=post_id, resources_path=f"{script_dir}/resources")
+
+        return JSONResponse(status_code=201, content='Answer Created!')
     
     else:
-        return {"Status": "Unsuccessful"}
+        raise HTTPException(status_code=401, detail='Invalid Token!')
     
 @app.get('/load_recent_posts')
 def recent_posts():
