@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 import utils.auth_server_interface as auth_server
@@ -42,8 +42,11 @@ def root():
 
     return page
 
-@app.post("/new_post/{username}/{token}")
-async def new_post(username: str, token: str, title: str = Form(), content: str = Form(), software: str = Form()):
+@app.post("/new_post")
+async def new_post(request: Request, title: str = Form(), content: str = Form(), software: str = Form()):
+    # Get username and token from request headers
+    username = request.headers.get('username')
+    token = request.headers.get('token')
 
     # Verifies token with auth server
     if await auth_server.verify_token(username, token):
@@ -136,8 +139,12 @@ def load_comments(post_id: str):
 
     return return_comments
 
-@app.post('/new_comment/{username}/{token}')
-async def new_comment(username: str, token: str, comment: str = Form(), post_id: str = Form()):
+@app.post('/new_comment')
+async def new_comment(request: Request, comment: str = Form(), post_id: str = Form()):
+    # Get username and token from request headers
+    username = request.headers.get('username')
+    token = request.headers.get('token')
+
     # Verifies token with auth server
     if await auth_server.verify_token(username=username, token=token):
         # Create comment in database
@@ -158,8 +165,12 @@ async def new_comment(username: str, token: str, comment: str = Form(), post_id:
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
 
-@app.post('/new_answer/{username}/{token}')
-async def new_answer(username: str, token: str, answer: str = Form(), post_id: str = Form()):
+@app.post('/new_answer')
+async def new_answer(request: Request, answer: str = Form(), post_id: str = Form()):
+    # Get username and token from request headers
+    username = request.headers.get('username')
+    token = request.headers.get('token')
+
     # Verifies token with auth server
     if await auth_server.verify_token(username=username, token=token):
         database.create_answer(author=username, answer=answer, post_id=post_id)
