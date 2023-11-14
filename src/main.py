@@ -118,7 +118,11 @@ def load_post(post_id: str):
 
             return_post = data
 
-    return return_post
+    # Return requested post to client
+    if return_post: 
+       return return_post
+    else:
+       raise HTTPException(status_code=404, detail='Post Not Found') 
 
 @app.get("/load_comments/{post_id}")
 def load_comments(post_id: str):
@@ -137,7 +141,11 @@ def load_comments(post_id: str):
 
             return_comments = data
 
-    return return_comments
+    # Return requested comments to client
+    if return_comments: 
+       return return_comments
+    else:
+       raise HTTPException(status_code=404, detail='Comments Not Found') 
 
 @app.post('/new_comment')
 async def new_comment(request: Request, comment: str = Form(), post_id: str = Form()):
