@@ -197,6 +197,20 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
     else:
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
+@app.delete('/delete_post/{post_id}')
+async def delete_post(post_id: str, request: Request):
+    # Get auth information from request header
+    username = request.headers.get('username')
+    token = request.headers.get('token')
+    
+    # Verify token with auth server
+    if await auth_server.verify_token(username=username, token=token):
+        database.delete_post(post_id)
+
+        return JSONResponse(status_code=200, detail='Post Deleted!')
+    else:
+        raise HTTPException(status_code=401, detail='Invalid Token!')
+
 @app.get('/load_recent_posts')
 def recent_posts():
     posts = database.get_recent_posts()
