@@ -142,3 +142,15 @@ def delete_post(post_id: str):
     # Commit and close database connection
     conn.commit()
     conn.close()
+
+def update_post(post_id: str, title: str, content: str, software: str):
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    # Update post in database
+    c.execute('UPDATE posts SET title = ?, content = ?, software = ? WHERE id = ?', (title, content, software, post_id))
+
+    # Commit and close database connection
+    conn.commit()
+    conn.close()
