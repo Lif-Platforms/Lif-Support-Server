@@ -124,9 +124,21 @@ def get_post_author(post_id: str):
     c = conn.cursor()
 
     c.execute ("SELECT * FROM posts WHERE id = ?", (post_id,))
-    row = c.fetchone ()
+    row = c.fetchone()
 
     # Fetch username from row 
     username = row[0]
 
     return username
+
+def delete_post(post_id: str):
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    # Delete post from database
+    c.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+
+    # Commit and close database connection
+    conn.commit()
+    conn.close()
