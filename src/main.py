@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Form, HTTPException, Request
+from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 import utils.auth_server_interface as auth_server
@@ -67,7 +68,7 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
 @app.get("/search/{query}")
-def search(query):
+def search(query, filters: Optional[str] = None):
     def find_best_results(search_query, results, search_index):
         if results:
             best_matches = difflib.get_close_matches(search_query, [item[search_index] for item in results], n=len(results), cutoff=0.5)
@@ -96,8 +97,18 @@ def search(query):
         else:
             content =  raw_content[:100 - 3] + "..."
 
-        # Formats and adds data to data list
-        data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+        # Check if filters are supplied
+        if filters:
+            # Format filters for use
+            formatted_filters = filters.split(',')
+
+            # Ignore result if it does not match filters
+            if software in formatted_filters: 
+                # Formats and adds data to data list
+                data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+        else:
+            # Formats and adds data to data list
+            data.append({"Title": title, "Content": content, "Software": software, "Id": id})
 
     return data
 
