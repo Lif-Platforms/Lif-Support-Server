@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import utils.email_interface as email_interface
+import utils.config_interface as config
 import difflib
 import uvicorn
 import json
@@ -14,26 +15,23 @@ import os
 
 app = FastAPI()
 
+# Load config
+configurations = config.load_config()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=configurations['allow-origins'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Get the absolute path of the current script
 script_path = os.path.abspath(__file__)
 
 # Get the directory path of the current script
 script_dir = os.path.dirname(script_path)
-
-# Loads Configuration
-with open('config.yml', 'r') as file:
-    configuration = yaml.safe_load(file)
-
-# Configure CORS
-origins = configuration['allow-origins']
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/", response_class=HTMLResponse)
 def root():

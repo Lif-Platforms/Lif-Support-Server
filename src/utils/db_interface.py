@@ -1,14 +1,17 @@
 import sqlite3
 import json
+from datetime import datetime
 
 def new_post(author, title, content, software, post_id):
-
     # Connects to database
     conn = sqlite3.connect("database/database.db")
     c = conn.cursor()
 
+    # Get Current Date
+    current_date = datetime.today().strftime('%Y-%m-%d')
+
     # Adds post to database
-    c.execute("INSERT INTO posts (author, title, content, software, id, comments) VALUES (?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, "[]"))
+    c.execute("INSERT INTO posts (author, title, content, software, id, comments, date) VALUES (?, ?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, "[]", current_date))
     conn.commit()
 
     conn.close()
