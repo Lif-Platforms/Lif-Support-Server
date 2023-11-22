@@ -1,10 +1,9 @@
 import requests
-import yaml
 
-# Load config
-with open("config.yml", "r") as config:
-    contents = config.read()
-    configurations = yaml.safe_load(contents)
+# Allow main script to set the config
+def set_config(config):
+    global configurations
+    configurations = config
 
 async def verify_token(username, token):
     # Gets response from auth server

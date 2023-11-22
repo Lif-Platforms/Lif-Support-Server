@@ -13,6 +13,11 @@ import os
 
 # Handle configuration loading
 def load_config():
+    # Check if config.yml exists
+    if not os.path.isfile('config.yml'):
+        with open('config.yml', 'a') as file:
+            file.close()
+            
     with open("config.yml", "r") as config:
         contents = config.read()
         configurations = yaml.safe_load(contents)

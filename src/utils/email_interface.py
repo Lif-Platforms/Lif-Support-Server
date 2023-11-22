@@ -1,16 +1,16 @@
-import yaml
 import requests
 import os
+
+# Allow main script to set the config
+def set_config(config):
+    global configuration
+    configuration = config
 
 # Get the absolute path of the current script
 script_path = os.path.abspath(__file__)
 
 # Get the directory path of the current script
 script_dir = os.path.dirname(script_path)
-
-# Load config
-with open('config.yml', 'r') as file:
-    configuration = yaml.safe_load(file)
 
 def send_comment_notification(author: str, recipient: str, content: str, post_id: str, resources_path: str):
     # Load email html template
