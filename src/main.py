@@ -117,23 +117,14 @@ def search(query, filters: Optional[str] = None):
 @app.get("/load_post/{post_id}")
 def load_post(post_id: str):
     # Gets all posts from database
-    posts = database.get_posts()
+    post = database.get_post(post_id)
 
-    return_post = False
+    # Check if post exists
+    if post:
+        # Formats data for sending to client
+        data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Date": post[6]}
 
-    # Finds the post based on id
-    for post in posts:
-        database_post_id = post[4]
-
-        if post_id == database_post_id:
-            # Formats data for sending to client
-            data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3]}
-
-            return_post = data
-
-    # Return requested post to client
-    if return_post: 
-       return return_post
+        return data
     else:
        raise HTTPException(status_code=404, detail='Post Not Found') 
 
