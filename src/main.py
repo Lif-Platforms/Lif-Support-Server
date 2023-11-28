@@ -122,7 +122,7 @@ def load_post(post_id: str):
     # Check if post exists
     if post:
         # Formats data for sending to client
-        data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Date": post[5]}
+        data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Date": post[6]}
 
         return data
     else:

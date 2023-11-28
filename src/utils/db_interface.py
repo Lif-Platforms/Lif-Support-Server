@@ -8,7 +8,7 @@ def new_post(author, title, content, software, post_id):
     c = conn.cursor()
 
     # Get Current Date
-    current_date = datetime.today().strftime('%Y-%m-%d')
+    current_date = datetime.today().strftime('%m/%d/%Y')
 
     # Adds post to database
     c.execute("INSERT INTO posts (author, title, content, software, id, comments, date) VALUES (?, ?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, "[]", current_date))
