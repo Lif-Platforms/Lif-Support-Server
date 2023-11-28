@@ -139,27 +139,15 @@ def load_post(post_id: str):
 
 @app.get("/load_comments/{post_id}")
 def load_comments(post_id: str):
-    # Gets all posts from database
-    posts = database.get_posts()
-
-    return_comments = False
-
-    # Finds the post based on id
-    for post in posts:
-        database_post_id = post[4]
-
-        if post_id == database_post_id:
-            # Formats data for sending to client
-            data = json.loads(post[5])
-
-            return_comments = data
-
-    # Return requested comments to client
-    if return_comments: 
-       return return_comments
+    # Gets post from database
+    post = database.get_post(post_id)
+    
+    # Check if post exists and return comments
+    if post:
+        return json.loads(post[5])
     else:
-       raise HTTPException(status_code=404, detail='Comments Not Found') 
-
+        raise HTTPException(status_code=404, detail='Comments Not Found') 
+       
 @app.post('/new_comment')
 async def new_comment(request: Request, comment: str = Form(), post_id: str = Form()):
     # Get username and token from request headers

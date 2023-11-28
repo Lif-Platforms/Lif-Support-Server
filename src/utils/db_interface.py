@@ -30,6 +30,17 @@ def get_posts():
 
     return posts
 
+def get_post(post_id: str):
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    # Get post from database
+    c.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
+    post = c.fetchone()
+
+    return post
+
 def create_comment(author, comment, post_id):
     # Connects to database
     conn = sqlite3.connect("database/database.db")
