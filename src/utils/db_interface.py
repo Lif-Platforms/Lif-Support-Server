@@ -125,11 +125,13 @@ def get_post_author(post_id: str):
 
     c.execute ("SELECT * FROM posts WHERE id = ?", (post_id,))
     row = c.fetchone()
+    conn.close()
 
-    # Fetch username from row 
-    username = row[0]
-
-    return username
+    # Return username from row 
+    if row:
+        return row[0]
+    else:
+        return None
 
 def delete_post(post_id: str):
     # Connects to database

@@ -198,12 +198,12 @@ async def delete_post(post_id: str, request: Request):
     # Verify token with auth server
     if await auth_server.verify_token(username=username, token=token):
         # Verify user has permission to delete post
-        author = database.get_post_author(username)
+        author = database.get_post_author(post_id)
 
         if author == username:
             database.delete_post(post_id)
 
-            return JSONResponse(status_code=200, detail='Post Deleted!')
+            return JSONResponse(status_code=200, content='Post Deleted!')
         else:
             raise HTTPException(status_code=403, detail='Permission Denied!')
     else:
