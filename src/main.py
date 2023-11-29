@@ -189,6 +189,47 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
     else:
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
+@app.delete('/delete_post/{post_id}')
+async def delete_post(post_id: str, request: Request):
+    # Get auth information from request header
+    username = request.headers.get('username')
+    token = request.headers.get('token')
+    
+    # Verify token with auth server
+    if await auth_server.verify_token(username=username, token=token):
+        # Verify user has permission to delete post
+        author = database.get_post_author(post_id)
+
+        if author == username:
+            database.delete_post(post_id)
+
+            return JSONResponse(status_code=200, content='Post Deleted!')
+        else:
+            raise HTTPException(status_code=403, detail='Permission Denied!')
+    else:
+        raise HTTPException(status_code=401, detail='Invalid Token!')
+    
+@app.put('/edit_post/{post_id}')
+async def edit_post(request: Request, post_id: str, title: str = Form(), content: str = Form(), software: str = Form()):
+    # Get auth information from request header
+    username = request.headers.get('username')
+    token = request.headers.get('token')
+
+    # Verify token with auth server
+    if await auth_server.verify_token(username=username, token=token):
+        # Verifies the user is the author of the post
+        author = database.get_post_author(post_id)
+
+        if author == username:
+            # Update post in database
+            database.update_post(post_id, title, content, software)
+
+            return JSONResponse(status_code=200, content='Post Updated Successfully!')
+        else:
+            raise HTTPException(status_code=403, detail='Permission Denied!')
+    else:
+        raise HTTPException(status_code=401, detail='Invalid Token!')
+
 @app.get('/load_recent_posts')
 def recent_posts():
     posts = database.get_recent_posts()
