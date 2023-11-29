@@ -18,9 +18,10 @@ app = FastAPI()
 # Load config
 configurations = config.load_config()
 
-# Sets config for auth_interface and email_interface
+# Sets config for auth_interface, email_interface, and db_interface
 auth_server.set_config(configurations)
 email_interface.set_config(configurations)
+database.set_config(configurations)
 
 # Configure CORS
 app.add_middleware(
