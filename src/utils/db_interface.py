@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector.abstracts import ClientFlag
 import json
 from datetime import datetime
 import uuid
@@ -8,17 +9,30 @@ def set_config(config):
     global configurations
     configurations = config
 
+# Global database connection
+conn = None
+
 # Handle database connection
 def connect_to_database():
     # Handle connecting to the database
     def connect():
         global conn
-        conn = mysql.connector.connect(
-            host=configurations['mysql-host'],
-            user=configurations['mysql-user'],
-            password=configurations['mysql-password'],
-            database=configurations['mysql-database']
-        )
+
+        mysql_config = {
+            "host": configurations['mysql-host'],
+            "port": configurations['mysql-port'],
+            "user": configurations['mysql-user'],
+            "password": configurations['mysql-password'],
+            "database": configurations['mysql-database']
+        }
+
+        # Add SSL certificate if SSL is enabled
+        if configurations['mysql-ssl']:
+            # Add SSL configurations
+            mysql_config['client_flags'] = [ClientFlag.SSL]
+            mysql_config['ssl_ca'] = configurations['mysql-cert-path']
+
+        conn = mysql.connector.connect(**mysql_config)
     
     # Check if there is a MySQL connection
     if conn is None:
