@@ -9,6 +9,9 @@ __pycache__/
 # Config files
 *.yml
 
+# Cert files
+*.pem
+
 # Distribution / packaging
 .Python
 build/
