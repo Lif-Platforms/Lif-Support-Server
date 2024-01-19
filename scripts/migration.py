@@ -14,6 +14,8 @@ import yaml
 import sqlite3
 import json
 
+print("Starting migration process...")
+
 # Load main config
 with open("config.yml", "r") as config:
     configurations = yaml.safe_load(config.read())
@@ -48,7 +50,7 @@ sqlite_posts = sqlite_cursor.fetchall()
 # Sift through SQLite posts
 for post in sqlite_posts:
     # Add post to MySQL database
-    mysql_cursor.execute("INSERT INTO posts author = %s, title = %s, content = %s, software = %s, post_id = %s, date = %s", 
+    mysql_cursor.execute("INSERT INTO posts (author, title, content, software, post_id, date) VALUES (%s, %s, %s, %s, %s, %s)", 
                          (post[0], post[1], post[2], post[3], post[4], post[6]))
 
     # Load comments
@@ -60,7 +62,7 @@ for post in sqlite_posts:
         reply_id = str(uuid.uuid4())
 
         # Add reply to database
-        mysql_cursor.execute("INSERT INTO replies post_id = %s, reply_id = %s, author = %s, type = %s, content = %s",
+        mysql_cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content) VALUES (%s, %s, %s, %s, %s)",
                              (post[4], reply_id, comment["Author"], comment["Type"], comment["Content"]))
 
 # Commit all changes to MySQL database
@@ -69,3 +71,5 @@ mysql_conn.commit()
 # Close MySQL and SQLite connections
 mysql_conn.close()
 sqlite_conn.close()
+
+print("All data successfully migrated!")
