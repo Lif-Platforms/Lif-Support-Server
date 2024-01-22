@@ -6,11 +6,8 @@ import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import utils.email_interface as email_interface
 import utils.config_interface as config
-import difflib
 import uvicorn
-import json
 import uuid
-import yaml
 import os
 
 app = FastAPI()
@@ -72,46 +69,39 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
     
 @app.get("/search/{query}")
 def search(query, filters: Optional[str] = None):
-    def find_best_results(search_query, results, search_index):
-        if results:
-            best_matches = difflib.get_close_matches(search_query, [item[search_index] for item in results], n=len(results), cutoff=0.5)
-            return [item for match in best_matches for item in results if match == item[search_index]]
-        else:
-            return []
-
-    search_query = query
-    results = database.get_posts()
-    search_index = 1  # Change this to the desired index
-    best_results = find_best_results(search_query, results, search_index)
-
+    # Search posts
+    results = database.search_posts(query)
+    
     # Formats results for client
     data = []
+    
+    # Check if any results were found
+    if results:
+        for post in results:
+            title = post[2]
+            raw_content = post[3]
+            software = post[4]
+            id = post[5]
+            content = ''
+            
+            # Adds "..." if the content is too long for the preview
+            if len(raw_content) <= 100:
+                content = raw_content
+            else:
+                content =  raw_content[:100 - 3] + "..."
 
-    for post in best_results:
-        title = post[1]
-        raw_content = post[2]
-        software = post[3]
-        id = post[4]
-        content = ''
-        
-        # Adds "..." if the content is too long for the preview
-        if len(raw_content) <= 100:
-            content = raw_content
-        else:
-            content =  raw_content[:100 - 3] + "..."
+            # Check if filters are supplied
+            if filters:
+                # Format filters for use
+                formatted_filters = filters.split(',')
 
-        # Check if filters are supplied
-        if filters:
-            # Format filters for use
-            formatted_filters = filters.split(',')
-
-            # Ignore result if it does not match filters
-            if software in formatted_filters: 
+                # Ignore result if it does not match filters
+                if software in formatted_filters: 
+                    # Formats and adds data to data list
+                    data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+            else:
                 # Formats and adds data to data list
                 data.append({"Title": title, "Content": content, "Software": software, "Id": id})
-        else:
-            # Formats and adds data to data list
-            data.append({"Title": title, "Content": content, "Software": software, "Id": id})
 
     return data
 
@@ -123,7 +113,7 @@ def load_post(post_id: str):
     # Check if post exists
     if post:
         # Formats data for sending to client
-        data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Date": post[6]}
+        data = {"Title": post[2], "Content": post[3], "Author": post[1], "Software": post[4], "Date": post[6]}
 
         return data
     else:
@@ -131,12 +121,26 @@ def load_post(post_id: str):
 
 @app.get("/load_comments/{post_id}")
 def load_comments(post_id: str):
-    # Gets post from database
+    # Get post to ensure it exists
     post = database.get_post(post_id)
     
     # Check if post exists and return comments
     if post:
-        return json.loads(post[5])
+        # Get comments from database
+        comments = database.get_comments(post_id)
+
+        # Check if any comments were returned
+        if (comments):
+            data = []
+
+            # Parse comments
+            for comment in comments:
+                data.append({"Id": comment[2], "Author": comment[3], "Content": comment[5], "Type": comment[4]})
+
+            return data
+        else:
+            # Return empty list if no comments
+            return []
     else:
         raise HTTPException(status_code=404, detail='Comments Not Found') 
        

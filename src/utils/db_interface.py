@@ -42,6 +42,16 @@ def connect_to_database():
         if not conn.is_connected():
             connect()
 
+def search_posts(query):
+    connect_to_database()
+
+    cursor = conn.cursor()
+
+    # Search posts
+    cursor.execute("SELECT * FROM posts WHERE title SOUNDS LIKE %s", (query,))
+    posts = cursor.fetchall()
+
+    return posts
 
 def new_post(author, title, content, software, post_id):
     connect_to_database()
@@ -76,10 +86,21 @@ def get_post(post_id: str):
     cursor = conn.cursor()
 
     # Get post from database
-    cursor.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
     post = cursor.fetchone()
 
     return post
+
+def get_comments(post_id: str):
+    connect_to_database()
+
+    cursor = conn.cursor()
+
+    # Get comments from database
+    cursor.execute("SELECT * FROM replies WHERE post_id = %s", (post_id,))
+    comments = cursor.fetchall()
+
+    return comments
 
 def create_comment(author, comment, post_id):
     connect_to_database()
