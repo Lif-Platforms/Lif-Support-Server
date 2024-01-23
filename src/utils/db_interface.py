@@ -62,7 +62,7 @@ def new_post(author, title, content, software, post_id):
     current_date = datetime.today().strftime('%m/%d/%Y')
 
     # Adds post to database
-    cursor.execute("INSERT INTO posts (author, title, content, software, post_id, date) VALUES (?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, current_date))
+    cursor.execute("INSERT INTO posts (author, title, content, software, post_id, date) VALUES (%s, %s, %s, %s, %s, %s)", (author, title, content, software, post_id, current_date))
     conn.commit()
 
     cursor.close()
@@ -108,7 +108,7 @@ def create_comment(author, comment, post_id):
     cursor = conn.cursor()
 
     # Check if post exists
-    cursor.execute("SELECT * FROM posts WHERE post_id = ?", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
     post = cursor.fetchone()
 
     if post: 
