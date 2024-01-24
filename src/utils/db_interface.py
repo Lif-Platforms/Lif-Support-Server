@@ -62,7 +62,8 @@ def new_post(author, title, content, software, post_id):
     current_date = datetime.today().strftime('%m/%d/%Y')
 
     # Adds post to database
-    cursor.execute("INSERT INTO posts (author, title, content, software, post_id, date) VALUES (%s, %s, %s, %s, %s, %s)", (author, title, content, software, post_id, current_date))
+    cursor.execute("INSERT INTO posts (author, title, content, software, post_id, date) VALUES (%s, %s, %s, %s, %s, %s)", 
+                   (author, title, content, software, post_id, current_date))
     conn.commit()
 
     cursor.close()
@@ -116,7 +117,8 @@ def create_comment(author, comment, post_id):
         reply_id = str(uuid.uuid4())
 
         # Create new post reply
-        cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content)", (post_id, reply_id, author, "Comment", comment))
+        cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content) VALUES (%s, %s, %s, %s, %s)", 
+                       (post_id, reply_id, author, "Comment", comment))
         conn.commit()
         cursor.close()
 
@@ -131,7 +133,7 @@ def create_answer(author, answer, post_id):
     cursor = conn.cursor()
 
     # Check if post exists
-    cursor.execute("SELECT * FROM posts WHERE post_id = ?", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
     post = cursor.fetchone()
 
     if post: 
@@ -139,7 +141,8 @@ def create_answer(author, answer, post_id):
         reply_id = str(uuid.uuid4())
 
         # Create new post reply
-        cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content)", (post_id, reply_id, author, "Answer", answer))
+        cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content) VALUES (%s, %s, %s, %s, %s)", 
+                       (post_id, reply_id, author, "Answer", answer))
         conn.commit()
         cursor.close()
 
@@ -178,7 +181,7 @@ def get_post_author(post_id: str):
 
     cursor = conn.cursor()
 
-    cursor.execute ("SELECT * FROM posts WHERE id = ?", (post_id,))
+    cursor.execute ("SELECT * FROM posts WHERE id = %s", (post_id,))
     row = cursor.fetchone()
     cursor.close()
 
@@ -194,10 +197,10 @@ def delete_post(post_id: str):
     cursor = conn.cursor()
 
     # Delete post from database
-    cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM posts WHERE post_id = %s", (post_id,))
 
     # Delete all replies from database
-    cursor.execute("DELETE FROM replies WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM replies WHERE post_id = %s", (post_id,))
 
     # Commit and close database cursor
     conn.commit()
@@ -209,7 +212,8 @@ def update_post(post_id: str, title: str, content: str, software: str):
     cursor = conn.cursor()
 
     # Update post in database
-    cursor.execute('UPDATE posts SET title = ?, content = ?, software = ? WHERE post_id = ?', (title, content, software, post_id))
+    cursor.execute("UPDATE posts SET title = %s, content = %s, software = %s WHERE post_id = %s", 
+                   (title, content, software, post_id))
 
     # Commit and close database cursor
     conn.commit()
