@@ -9,7 +9,7 @@ __pycache__/
 # Config files
 *.yml
 
-# Certificate files
+# Cert files
 *.pem
 
 # Distribution / packaging
