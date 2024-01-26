@@ -1,8 +1,10 @@
 import mysql.connector
 from mysql.connector.abstracts import ClientFlag
-import json
 from datetime import datetime
 import uuid
+
+# Hold global Support Server configurations
+configurations = None
 
 # Allow main script to set the config
 def set_config(config):
