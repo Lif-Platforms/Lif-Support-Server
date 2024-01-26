@@ -81,7 +81,7 @@ def search(query, filters: Optional[str] = None):
             title = post[2]
             raw_content = post[3]
             software = post[4]
-            id = post[5]
+            post_id = post[5]
             content = ''
             
             # Adds "..." if the content is too long for the preview
@@ -98,7 +98,7 @@ def search(query, filters: Optional[str] = None):
                 # Ignore result if it does not match filters
                 if software in formatted_filters: 
                     # Formats and adds data to data list
-                    data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+                    data.append({"Title": title, "Content": content, "Software": software, "Id": post_id})
             else:
                 # Formats and adds data to data list
                 data.append({"Title": title, "Content": content, "Software": software, "Id": id})
