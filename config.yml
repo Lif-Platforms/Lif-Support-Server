@@ -1,12 +1,9 @@
 # Allow requests from these domains
 allow-origins: 
-  - http://localhost
-  - http://localhost:3000
-  - http://localhost:57875
-  - http://10.0.0.97
-  
+  - "*"
+
 # Url to Auth Server
-auth-url: http://localhost:8002
+auth-url: https://api.auth.lifplatforms.com
 
 auth-access-token: kjhsdagfkjshhfksjhfdalkjd
 
