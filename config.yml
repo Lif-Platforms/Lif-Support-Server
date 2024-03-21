@@ -1,0 +1,12 @@
+# Allow requests from these domains
+allow-origins: 
+  - "*"
+
+# Url to Auth Server
+auth-url: https://api.auth.lifplatforms.com
+
+auth-access-token: kjhsdagfkjshhfksjhfdalkjd
+
+mail-service-token: TestToken123
+
+mail-service-url: http://localhost:8005
