@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Form, HTTPException, Request
+from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 import utils.auth_server_interface as auth_server
 import utils.db_interface as database
 import utils.email_interface as email_interface
+import utils.config_interface as config
 import difflib
 import uvicorn
 import json
@@ -13,26 +15,27 @@ import os
 
 app = FastAPI()
 
+# Load config
+configurations = config.load_config()
+
+# Sets config for auth_interface and email_interface
+auth_server.set_config(configurations)
+email_interface.set_config(configurations)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=configurations['allow-origins'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Get the absolute path of the current script
 script_path = os.path.abspath(__file__)
 
 # Get the directory path of the current script
 script_dir = os.path.dirname(script_path)
-
-# Loads Configuration
-with open('config.yml', 'r') as file:
-    configuration = yaml.safe_load(file)
-
-# Configure CORS
-origins = configuration['allow-origins']
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/", response_class=HTMLResponse)
 def root():
@@ -67,7 +70,7 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
 @app.get("/search/{query}")
-def search(query):
+def search(query, filters: Optional[str] = None):
     def find_best_results(search_query, results, search_index):
         if results:
             best_matches = difflib.get_close_matches(search_query, [item[search_index] for item in results], n=len(results), cutoff=0.5)
@@ -96,57 +99,46 @@ def search(query):
         else:
             content =  raw_content[:100 - 3] + "..."
 
-        # Formats and adds data to data list
-        data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+        # Check if filters are supplied
+        if filters:
+            # Format filters for use
+            formatted_filters = filters.split(',')
+
+            # Ignore result if it does not match filters
+            if software in formatted_filters: 
+                # Formats and adds data to data list
+                data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+        else:
+            # Formats and adds data to data list
+            data.append({"Title": title, "Content": content, "Software": software, "Id": id})
 
     return data
 
 @app.get("/load_post/{post_id}")
 def load_post(post_id: str):
     # Gets all posts from database
-    posts = database.get_posts()
+    post = database.get_post(post_id)
 
-    return_post = False
+    # Check if post exists
+    if post:
+        # Formats data for sending to client
+        data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Date": post[6]}
 
-    # Finds the post based on id
-    for post in posts:
-        database_post_id = post[4]
-
-        if post_id == database_post_id:
-            # Formats data for sending to client
-            data = {"Title": post[1], "Content": post[2], "Author": post[0], "Software": post[3], "Id": post_id}
-
-            return_post = data
-
-    # Return requested post to client
-    if return_post: 
-       return return_post
+        return data
     else:
        raise HTTPException(status_code=404, detail='Post Not Found') 
 
 @app.get("/load_comments/{post_id}")
 def load_comments(post_id: str):
-    # Gets all posts from database
-    posts = database.get_posts()
-
-    return_comments = False
-
-    # Finds the post based on id
-    for post in posts:
-        database_post_id = post[4]
-
-        if post_id == database_post_id:
-            # Formats data for sending to client
-            data = json.loads(post[5])
-
-            return_comments = data
-
-    # Return requested comments to client
-    if return_comments: 
-       return return_comments
+    # Gets post from database
+    post = database.get_post(post_id)
+    
+    # Check if post exists and return comments
+    if post:
+        return json.loads(post[5])
     else:
-       raise HTTPException(status_code=404, detail='Comments Not Found') 
-
+        raise HTTPException(status_code=404, detail='Comments Not Found') 
+       
 @app.post('/new_comment')
 async def new_comment(request: Request, comment: str = Form(), post_id: str = Form()):
     # Get username and token from request headers

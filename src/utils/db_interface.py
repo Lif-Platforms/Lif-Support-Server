@@ -1,14 +1,17 @@
 import sqlite3
 import json
+from datetime import datetime
 
 def new_post(author, title, content, software, post_id):
-
     # Connects to database
     conn = sqlite3.connect("database/database.db")
     c = conn.cursor()
 
+    # Get Current Date
+    current_date = datetime.today().strftime('%m/%d/%Y')
+
     # Adds post to database
-    c.execute("INSERT INTO posts (author, title, content, software, id, comments) VALUES (?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, "[]"))
+    c.execute("INSERT INTO posts (author, title, content, software, id, comments, date) VALUES (?, ?, ?, ?, ?, ?, ?)", (author, title, content, software, post_id, "[]", current_date))
     conn.commit()
 
     conn.close()
@@ -26,6 +29,17 @@ def get_posts():
     conn.close()
 
     return posts
+
+def get_post(post_id: str):
+    # Connects to database
+    conn = sqlite3.connect("database/database.db")
+    c = conn.cursor()
+
+    # Get post from database
+    c.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
+    post = c.fetchone()
+
+    return post
 
 def create_comment(author, comment, post_id):
     # Connects to database
@@ -111,11 +125,13 @@ def get_post_author(post_id: str):
 
     c.execute ("SELECT * FROM posts WHERE id = ?", (post_id,))
     row = c.fetchone()
+    conn.close()
 
-    # Fetch username from row 
-    username = row[0]
-
-    return username
+    # Return username from row 
+    if row:
+        return row[0]
+    else:
+        return None
 
 def delete_post(post_id: str):
     # Connects to database
