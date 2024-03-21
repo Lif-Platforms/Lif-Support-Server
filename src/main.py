@@ -59,7 +59,7 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
             # Generate a random UUID
             post_id = str(uuid.uuid4())
 
-            database.new_post(username, title, content, software, post_id)
+            await database.new_post(username, title, content, software, post_id)
 
             return JSONResponse(status_code=201, content={"post_id": post_id})
         else: 
@@ -68,9 +68,9 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
 @app.get("/search/{query}")
-def search(query, filters: Optional[str] = None):
+async def search(query, filters: Optional[str] = None):
     # Search posts
-    results = database.search_posts(query)
+    results = await database.search_posts(query)
     
     # Formats results for client
     data = []
@@ -106,9 +106,9 @@ def search(query, filters: Optional[str] = None):
     return data
 
 @app.get("/load_post/{post_id}")
-def load_post(post_id: str):
+async def load_post(post_id: str):
     # Gets all posts from database
-    post = database.get_post(post_id)
+    post = await database.get_post(post_id)
 
     # Check if post exists
     if post:
@@ -120,14 +120,14 @@ def load_post(post_id: str):
        raise HTTPException(status_code=404, detail='Post Not Found') 
 
 @app.get("/load_comments/{post_id}")
-def load_comments(post_id: str):
+async def load_comments(post_id: str):
     # Get post to ensure it exists
-    post = database.get_post(post_id)
+    post = await database.get_post(post_id)
     
     # Check if post exists and return comments
     if post:
         # Get comments from database
-        comments = database.get_comments(post_id)
+        comments = await database.get_comments(post_id)
 
         # Check if any comments were returned
         if (comments):
@@ -153,16 +153,16 @@ async def new_comment(request: Request, comment: str = Form(), post_id: str = Fo
     # Verifies token with auth server
     if await auth_server.verify_token(username=username, token=token):
         # Create comment in database
-        database.create_comment(author=username, comment=comment, post_id=post_id)
+        await database.create_comment(author=username, comment=comment, post_id=post_id)
 
         # Get post author
-        author = database.get_post_author(post_id=post_id)
+        author = await database.get_post_author(post_id=post_id)
 
         # Get author email from auth server
         author_email = await auth_server.get_account_email(author)
 
         # Send email notification
-        email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
+        await email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
 
         return JSONResponse(status_code=201, content='Created Comment!')
     
@@ -181,13 +181,13 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
         database.create_answer(author=username, answer=answer, post_id=post_id)
 
         # Get post author
-        author = database.get_post_author(post_id=post_id)
+        author = await database.get_post_author(post_id=post_id)
 
         # Get author email from auth server
         author_email = await auth_server.get_account_email(author)
 
         # Send email notification
-        email_interface.send_comment_notification(author=username, recipient=author_email, content=answer, post_id=post_id, resources_path=f"{script_dir}/resources")
+        await email_interface.send_comment_notification(author=username, recipient=author_email, content=answer, post_id=post_id, resources_path=f"{script_dir}/resources")
 
         return JSONResponse(status_code=201, content='Answer Created!')
     
@@ -203,10 +203,10 @@ async def delete_post(post_id: str, request: Request):
     # Verify token with auth server
     if await auth_server.verify_token(username=username, token=token):
         # Verify user has permission to delete post
-        author = database.get_post_author(post_id)
+        author = await database.get_post_author(post_id)
 
         if author == username:
-            database.delete_post(post_id)
+            await database.delete_post(post_id)
 
             return JSONResponse(status_code=200, content='Post Deleted!')
         else:
@@ -223,11 +223,11 @@ async def edit_post(request: Request, post_id: str, title: str = Form(), content
     # Verify token with auth server
     if await auth_server.verify_token(username=username, token=token):
         # Verifies the user is the author of the post
-        author = database.get_post_author(post_id)
+        author = await database.get_post_author(post_id)
 
         if author == username:
             # Update post in database
-            database.update_post(post_id, title, content, software)
+            await database.update_post(post_id, title, content, software)
 
             return JSONResponse(status_code=200, content='Post Updated Successfully!')
         else:
@@ -236,8 +236,8 @@ async def edit_post(request: Request, post_id: str, title: str = Form(), content
         raise HTTPException(status_code=401, detail='Invalid Token!')
 
 @app.get('/load_recent_posts')
-def recent_posts():
-    posts = database.get_recent_posts()
+async def recent_posts():
+    posts = await database.get_recent_posts()
 
     return posts
 

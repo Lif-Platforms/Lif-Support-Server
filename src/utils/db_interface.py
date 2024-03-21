@@ -7,7 +7,7 @@ import uuid
 configurations = None
 
 # Allow main script to set the config
-def set_config(config):
+def set_config(config): 
     global configurations
     configurations = config
 
@@ -15,7 +15,7 @@ def set_config(config):
 conn = None
 
 # Handle database connection
-def connect_to_database():
+async def connect_to_database(): 
     # Handle connecting to the database
     def connect():
         global conn
@@ -44,8 +44,8 @@ def connect_to_database():
         if not conn.is_connected():
             connect()
 
-def search_posts(query):
-    connect_to_database()
+async def search_posts(query):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -55,8 +55,8 @@ def search_posts(query):
 
     return posts
 
-def new_post(author, title, content, software, post_id):
-    connect_to_database()
+async def new_post(author, title, content, software, post_id):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -70,8 +70,8 @@ def new_post(author, title, content, software, post_id):
 
     cursor.close()
 
-def get_posts():
-    connect_to_database()
+async def get_posts():
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -83,8 +83,8 @@ def get_posts():
 
     return posts
 
-def get_post(post_id: str):
-    connect_to_database()
+async def get_post(post_id: str):
+    await connect_to_database()
     
     cursor = conn.cursor()
 
@@ -94,8 +94,8 @@ def get_post(post_id: str):
 
     return post
 
-def get_comments(post_id: str):
-    connect_to_database()
+async def get_comments(post_id: str):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -105,8 +105,8 @@ def get_comments(post_id: str):
 
     return comments
 
-def create_comment(author, comment, post_id):
-    connect_to_database()
+async def create_comment(author, comment, post_id):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -129,8 +129,8 @@ def create_comment(author, comment, post_id):
         cursor.close()
         return False
 
-def create_answer(author, answer, post_id):
-    connect_to_database()
+async def create_answer(author, answer, post_id):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -153,8 +153,8 @@ def create_answer(author, answer, post_id):
         cursor.close()
         return False
 
-def get_recent_posts():
-    connect_to_database()
+async def get_recent_posts():
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -178,8 +178,8 @@ def get_recent_posts():
 
     return return_posts
 
-def get_post_author(post_id: str):
-    connect_to_database()
+async def get_post_author(post_id: str):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -193,8 +193,8 @@ def get_post_author(post_id: str):
     else:
         return None
 
-def delete_post(post_id: str):
-    connect_to_database()
+async def delete_post(post_id: str):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
@@ -208,8 +208,8 @@ def delete_post(post_id: str):
     conn.commit()
     cursor.close()
 
-def update_post(post_id: str, title: str, content: str, software: str):
-    connect_to_database()
+async def update_post(post_id: str, title: str, content: str, software: str):
+    await connect_to_database()
 
     cursor = conn.cursor()
 
