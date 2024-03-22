@@ -183,7 +183,7 @@ async def get_post_author(post_id: str):
 
     cursor = conn.cursor()
 
-    cursor.execute ("SELECT * FROM posts WHERE id = %s", (post_id,))
+    cursor.execute ("SELECT * FROM posts WHERE post_id = %s", (post_id,))
     row = cursor.fetchone()
     cursor.close()
 

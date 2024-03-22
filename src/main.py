@@ -83,7 +83,7 @@ async def search(query, filters: Optional[str] = None):
             software = post[4]
             post_id = post[5]
             content = ''
-            
+
             # Adds "..." if the content is too long for the preview
             if len(raw_content) <= 100:
                 content = raw_content
@@ -101,9 +101,9 @@ async def search(query, filters: Optional[str] = None):
                     data.append({"Title": title, "Content": content, "Software": software, "Id": post_id})
             else:
                 # Formats and adds data to data list
-                data.append({"Title": title, "Content": content, "Software": software, "Id": id})
+                data.append({"Title": title, "Content": content, "Software": software, "Id": post_id})
 
-    return data
+    return JSONResponse(status_code=200, content=data)
 
 @app.get("/load_post/{post_id}")
 async def load_post(post_id: str):
