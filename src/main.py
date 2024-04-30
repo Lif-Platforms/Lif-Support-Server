@@ -155,6 +155,7 @@ async def new_comment(request: Request, comment: str = Form(), post_id: str = Fo
         # Create comment in database
         await database.create_comment(author=username, comment=comment, post_id=post_id)
 
+        '''
         # Get post author
         author = await database.get_post_author(post_id=post_id)
 
@@ -163,7 +164,8 @@ async def new_comment(request: Request, comment: str = Form(), post_id: str = Fo
 
         # Send email notification
         await email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
-
+        '''
+        
         return JSONResponse(status_code=201, content='Created Comment!')
     
     else:
@@ -178,8 +180,9 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
 
     # Verifies token with auth server
     if await auth_server.verify_token(username=username, token=token):
-        database.create_answer(author=username, answer=answer, post_id=post_id)
+        await database.create_answer(author=username, answer=answer, post_id=post_id)
 
+        '''
         # Get post author
         author = await database.get_post_author(post_id=post_id)
 
@@ -188,7 +191,8 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
 
         # Send email notification
         await email_interface.send_comment_notification(author=username, recipient=author_email, content=answer, post_id=post_id, resources_path=f"{script_dir}/resources")
-
+        '''
+        
         return JSONResponse(status_code=201, content='Answer Created!')
     
     else:
