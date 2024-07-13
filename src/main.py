@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi import FastAPI, Form, HTTPException, Request, BackgroundTasks
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -143,9 +143,20 @@ async def load_comments(post_id: str):
             return []
     else:
         raise HTTPException(status_code=404, detail='Comments Not Found') 
-       
+    
+async def send_email_notification(
+    author: str, 
+    post_id: str, 
+    content: str
+):
+    # Get author email from auth server
+    author_email = await auth_server.get_account_email(author)
+
+    # Send email notification
+    email_interface.send_comment_notification(author=author, recipient=author_email, content=content, post_id=post_id, resources_path=f"{script_dir}/resources")
+
 @app.post('/new_comment')
-async def new_comment(request: Request, comment: str = Form(), post_id: str = Form()):
+async def new_comment(request: Request, background_tasks: BackgroundTasks, comment: str = Form(), post_id: str = Form()):
     # Get username and token from request headers
     username = request.headers.get('username')
     token = request.headers.get('token')
@@ -158,12 +169,9 @@ async def new_comment(request: Request, comment: str = Form(), post_id: str = Fo
         # Get post author
         author = await database.get_post_author(post_id=post_id)
 
-        # Get author email from auth server
-        author_email = await auth_server.get_account_email(author)
-
-        # Send email notification
-        await email_interface.send_comment_notification(author=username, recipient=author_email, content=comment, post_id=post_id, resources_path=f"{script_dir}/resources")
-
+        # Send an email notification in the background
+        background_tasks.add_task(send_email_notification, author, post_id, comment)
+        
         return JSONResponse(status_code=201, content='Created Comment!')
     
     else:
@@ -171,7 +179,7 @@ async def new_comment(request: Request, comment: str = Form(), post_id: str = Fo
     
 
 @app.post('/new_answer')
-async def new_answer(request: Request, answer: str = Form(), post_id: str = Form()):
+async def new_answer(request: Request, background_tasks: BackgroundTasks, answer: str = Form(), post_id: str = Form()):
     # Get username and token from request headers
     username = request.headers.get('username')
     token = request.headers.get('token')
@@ -183,11 +191,8 @@ async def new_answer(request: Request, answer: str = Form(), post_id: str = Form
         # Get post author
         author = await database.get_post_author(post_id=post_id)
 
-        # Get author email from auth server
-        author_email = await auth_server.get_account_email(author)
-
-        # Send email notification
-        await email_interface.send_comment_notification(author=username, recipient=author_email, content=answer, post_id=post_id, resources_path=f"{script_dir}/resources")
+        # Send an email notification in the background
+        background_tasks.add_task(send_email_notification, author, post_id, answer)
 
         return JSONResponse(status_code=201, content='Answer Created!')
     
