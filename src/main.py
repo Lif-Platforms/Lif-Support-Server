@@ -153,7 +153,13 @@ async def send_email_notification(
     author_email = await auth_server.get_account_email(author)
 
     # Send email notification
-    email_interface.send_comment_notification(author=author, recipient=author_email, content=content, post_id=post_id, resources_path=f"{script_dir}/resources")
+    email_interface.send_comment_notification(
+        author=author, 
+        recipient=author_email, 
+        content=content, 
+        post_id=post_id, 
+        resources_path=f"{script_dir}/resources"
+    )
 
 @app.post('/new_comment')
 async def new_comment(request: Request, background_tasks: BackgroundTasks, comment: str = Form(), post_id: str = Form()):
