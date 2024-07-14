@@ -205,6 +205,32 @@ async def new_answer(request: Request, background_tasks: BackgroundTasks, answer
     else:
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
+@app.post('/create_reply/{reply_type}/{post_id}')
+async def create_reply(background_tasks: BackgroundTasks, request: Request, reply_type: str, post_id: str, content: str = Form()):
+    # Get auth headers
+    username = request.headers.get("username")
+    token = request.headers.get("token")
+
+    # Verify credentials with auth server
+    if await auth_server.verify_token(username, token):
+        # Check reply type
+        if type == "Comment" or type == "Answer":
+            # Create reply in database
+            if await database.create_reply(username, content, post_id, reply_type):
+                # Get post author
+                author = await database.get_post_author(post_id=post_id)
+
+                # Send an email notification in the background
+                background_tasks.add_task(send_email_notification, author, post_id, content)
+
+                return JSONResponse(status_code=201, content="Ok")
+            else:
+                raise HTTPException(status_code=404, detail="Post not found")
+        else:
+            raise HTTPException(status_code=400, detail="Invalid reply type")
+    else:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
 @app.delete('/delete_post/{post_id}')
 async def delete_post(post_id: str, request: Request):
     # Get auth information from request header
