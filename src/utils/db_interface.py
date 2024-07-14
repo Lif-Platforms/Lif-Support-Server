@@ -153,7 +153,7 @@ async def create_answer(author, answer, post_id):
         cursor.close()
         return False
     
-async def create_reply(author: str, content: str, post_id: str, type: str):
+async def create_reply(author: str, content: str, post_id: str, reply_type: str):
     await connect_to_database()
 
     cursor = conn.cursor()
@@ -168,7 +168,7 @@ async def create_reply(author: str, content: str, post_id: str, type: str):
 
         # Create new post reply
         cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content) VALUES (%s, %s, %s, %s, %s)", 
-                       (post_id, reply_id, author, type, content))
+                       (post_id, reply_id, author, reply_type, content))
         conn.commit()
 
         return True

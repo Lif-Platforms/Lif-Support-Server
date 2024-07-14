@@ -205,8 +205,8 @@ async def new_answer(request: Request, background_tasks: BackgroundTasks, answer
     else:
         raise HTTPException(status_code=401, detail='Invalid Token!')
     
-@app.post('/create_reply/{type}/{post_id}')
-async def create_reply(background_tasks: BackgroundTasks, request: Request, type: str, post_id: str, content: str = Form()):
+@app.post('/create_reply/{reply_type}/{post_id}')
+async def create_reply(background_tasks: BackgroundTasks, request: Request, reply_type: str, post_id: str, content: str = Form()):
     # Get auth headers
     username = request.headers.get("username")
     token = request.headers.get("token")
@@ -216,7 +216,7 @@ async def create_reply(background_tasks: BackgroundTasks, request: Request, type
         # Check reply type
         if type == "Comment" or type == "Answer":
             # Create reply in database
-            if await database.create_reply(username, content, post_id, type):
+            if await database.create_reply(username, content, post_id, reply_type):
                 # Get post author
                 author = await database.get_post_author(post_id=post_id)
 
