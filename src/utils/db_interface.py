@@ -152,6 +152,28 @@ async def create_answer(author, answer, post_id):
     else:
         cursor.close()
         return False
+    
+async def create_reply(author: str, content: str, post_id: str, type: str):
+    await connect_to_database()
+
+    cursor = conn.cursor()
+
+    # Check if post exists
+    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    post = cursor.fetchone()
+
+    if post:
+        # Generate unique id for reply 
+        reply_id = str(uuid.uuid4())
+
+        # Create new post reply
+        cursor.execute("INSERT INTO replies (post_id, reply_id, author, type, content) VALUES (%s, %s, %s, %s, %s)", 
+                       (post_id, reply_id, author, type, content))
+        conn.commit()
+
+        return True
+    else:
+        return False
 
 async def get_recent_posts():
     await connect_to_database()
