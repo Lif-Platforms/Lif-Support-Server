@@ -214,7 +214,7 @@ async def create_reply(background_tasks: BackgroundTasks, request: Request, repl
     # Verify credentials with auth server
     if await auth_server.verify_token(username, token):
         # Check reply type
-        if type == "Comment" or type == "Answer":
+        if reply_type == "Comment" or reply_type == "Answer":
             # Create reply in database
             if await database.create_reply(username, content, post_id, reply_type):
                 # Get post author
