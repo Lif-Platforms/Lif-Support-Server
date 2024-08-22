@@ -81,7 +81,7 @@ async def search(query, filters: Optional[str] = None):
             title = post[2]
             raw_content = post[3]
             software = post[4]
-            post_id = post[5]
+            post_id = post[0]
             content = ''
 
             # Adds "..." if the content is too long for the preview
