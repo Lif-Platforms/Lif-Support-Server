@@ -68,7 +68,12 @@ async def new_post(author, title, content, software, post_id):
                    (author, title, content, software, post_id, current_date))
     conn.commit()
 
+    cursor.execute("SELECT LAST_INSERT_ID()")
+    new_post_id = cursor.fetchone()
+
     cursor.close()
+
+    return new_post_id[0]
 
 async def get_posts():
     await connect_to_database()
@@ -89,7 +94,7 @@ async def get_post(post_id: str):
     cursor = conn.cursor()
 
     # Get post from database
-    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
     post = cursor.fetchone()
 
     return post
@@ -111,7 +116,7 @@ async def create_comment(author, comment, post_id):
     cursor = conn.cursor()
 
     # Check if post exists
-    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
     post = cursor.fetchone()
 
     if post: 
@@ -135,7 +140,7 @@ async def create_answer(author, answer, post_id):
     cursor = conn.cursor()
 
     # Check if post exists
-    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
     post = cursor.fetchone()
 
     if post: 
@@ -159,7 +164,7 @@ async def create_reply(author: str, content: str, post_id: str, reply_type: str)
     cursor = conn.cursor()
 
     # Check if post exists
-    cursor.execute("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
     post = cursor.fetchone()
 
     if post:
@@ -196,7 +201,7 @@ async def get_recent_posts():
         else:
             content =  raw_content[:100 - 3] + "..."
 
-        return_posts.append({"Title": post[2], "Content": content, "Software": post[4], "Id": post[5]})
+        return_posts.append({"Title": post[2], "Content": content, "Software": post[4], "Id": post[0]})
 
     return return_posts
 
@@ -205,7 +210,7 @@ async def get_post_author(post_id: str):
 
     cursor = conn.cursor()
 
-    cursor.execute ("SELECT * FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute ("SELECT * FROM posts WHERE id = %s", (post_id,))
     row = cursor.fetchone()
     cursor.close()
 
@@ -221,7 +226,7 @@ async def delete_post(post_id: str):
     cursor = conn.cursor()
 
     # Delete post from database
-    cursor.execute("DELETE FROM posts WHERE post_id = %s", (post_id,))
+    cursor.execute("DELETE FROM posts WHERE id = %s", (post_id,))
 
     # Delete all replies from database
     cursor.execute("DELETE FROM replies WHERE post_id = %s", (post_id,))
@@ -236,7 +241,7 @@ async def update_post(post_id: str, title: str, content: str, software: str):
     cursor = conn.cursor()
 
     # Update post in database
-    cursor.execute("UPDATE posts SET title = %s, content = %s, software = %s WHERE post_id = %s", 
+    cursor.execute("UPDATE posts SET title = %s, content = %s, software = %s WHERE id = %s", 
                    (title, content, software, post_id))
 
     # Commit and close database cursor
