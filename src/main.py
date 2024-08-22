@@ -59,9 +59,9 @@ async def new_post(request: Request, title: str = Form(), content: str = Form(),
             # Generate a random UUID
             post_id = str(uuid.uuid4())
 
-            await database.new_post(username, title, content, software, post_id)
+            new_post_id = await database.new_post(username, title, content, software, post_id)
 
-            return JSONResponse(status_code=201, content={"post_id": post_id})
+            return JSONResponse(status_code=201, content={"post_id": new_post_id})
         else: 
             raise HTTPException(status_code=400, detail='Invalid Software!')
     else:
