@@ -49,8 +49,16 @@ async def search_posts(query):
 
     cursor = conn.cursor()
 
-    # Search posts
-    cursor.execute("SELECT * FROM posts WHERE title SOUNDS LIKE %s", (query,))
+    # Set search query as a variable so we dont need to pass it in multiple times
+    cursor.execute("SET @search_query = %s;", (query,))
+
+    # Search posts and order by most relevant
+    cursor.execute("""
+        SELECT *, MATCH (title, content) AGAINST (@search_query) AS relevance
+        FROM posts
+        WHERE MATCH (title, content) AGAINST (@search_query)
+        ORDER BY relevance DESC;
+    """)
     posts = cursor.fetchall()
 
     return posts
