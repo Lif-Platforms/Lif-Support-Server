@@ -255,3 +255,11 @@ async def update_post(post_id: str, title: str, content: str, software: str):
     # Commit and close database cursor
     conn.commit()
     cursor.close()
+
+async def increase_post_view_count(post_id: str):
+    await connect_to_database()
+
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE posts SET views = views + 1 WHERE id = %s", (post_id,))
+    conn.commit()

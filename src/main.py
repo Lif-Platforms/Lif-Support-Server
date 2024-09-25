@@ -107,13 +107,18 @@ async def search(query, filters: Optional[str] = None):
 
 @app.get("/load_post/{post_id}")
 async def load_post(post_id: str):
+    # Increase post view count
+    # Done before post is loaded to ensure accurate view count
+    # If post doesn't exist then nothing will be executed in the database
+    await database.increase_post_view_count(post_id)
+
     # Gets all posts from database
     post = await database.get_post(post_id)
 
     # Check if post exists
     if post:
         # Formats data for sending to client
-        data = {"Title": post[2], "Content": post[3], "Author": post[1], "Software": post[4], "Date": post[6]}
+        data = {"Title": post[2], "Content": post[3], "Author": post[1], "Software": post[4], "Date": post[6], "Views": post[7]}
 
         return data
     else:
