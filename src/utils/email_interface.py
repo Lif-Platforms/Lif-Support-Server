@@ -12,13 +12,13 @@ script_path = os.path.abspath(__file__)
 # Get the directory path of the current script
 script_dir = os.path.dirname(script_path)
 
-def send_comment_notification(author: str, recipient: str, content: str, post_id: str, resources_path: str):
+def send_comment_notification(author: str, recipient: str, content: str, post_id: str, resources_path: str, post_title: str):
     # Load email html template
     with open (f'{resources_path}/new_comment.html', 'r') as template:
         template_content = template.read()
         template.close()
     
-    email_content = template_content.replace('[COMMENTOR_USERNAME]', author).replace('[COMMENT_CONTENT]', content).replace('[POST_URL]', f"https://support.lifplatforms.com/#/view_post/{post_id}")
+    email_content = template_content.replace('[COMMENTOR_USERNAME]', author).replace('[COMMENT_CONTENT]', content).replace('[POST_URL]', f"https://support.lifplatforms.com/post/{post_id}/{post_title}")
 
     # Make request to mail server
     headers = {

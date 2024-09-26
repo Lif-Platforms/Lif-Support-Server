@@ -152,7 +152,8 @@ async def load_comments(post_id: str):
 async def send_email_notification(
     author: str, 
     post_id: str, 
-    content: str
+    content: str,
+    post_title: str
 ):
     # Get author email from auth server
     author_email = await auth_server.get_account_email(author)
@@ -163,7 +164,8 @@ async def send_email_notification(
         recipient=author_email, 
         content=content, 
         post_id=post_id, 
-        resources_path=f"{script_dir}/resources"
+        resources_path=f"{script_dir}/resources",
+        post_title=post_title
     )
 
 @app.post('/new_comment')
@@ -177,11 +179,11 @@ async def new_comment(request: Request, background_tasks: BackgroundTasks, comme
         # Create comment in database
         await database.create_comment(author=username, comment=comment, post_id=post_id)
 
-        # Get post author
-        author = await database.get_post_author(post_id=post_id)
+        # Get post info
+        post = await database.get_post(post_id)
 
         # Send an email notification in the background
-        background_tasks.add_task(send_email_notification, author, post_id, comment)
+        background_tasks.add_task(send_email_notification, post[1], post_id, comment, post[2])
         
         return JSONResponse(status_code=201, content='Created Comment!')
     
